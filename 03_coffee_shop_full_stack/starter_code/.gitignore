@@ -1,0 +1,15 @@
+venv/
+.vscode/
+__pycache__/
+test.db
+backend/test_jwt.py
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
