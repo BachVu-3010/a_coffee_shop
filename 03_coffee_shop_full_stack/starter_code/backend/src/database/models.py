@@ -5,6 +5,7 @@ import json
 
 database_filename = "database.db"
 project_dir = os.path.dirname(os.path.abspath(__file__))
+# print(project_dir)
 database_path = "sqlite:///{}".format(os.path.join(project_dir, database_filename))
 
 db = SQLAlchemy()
@@ -27,6 +28,9 @@ db_drop_and_create_all()
 '''
 def db_drop_and_create_all():
     db.drop_all()
+    db.create_all()
+
+def create_all():
     db.create_all()
 
 '''
@@ -52,7 +56,7 @@ class Drink(db.Model):
         return {
             'id': self.id,
             'title': self.title,
-            'recipe': short_recipe
+            'recipe': short_recipe           
         }
 
     '''
