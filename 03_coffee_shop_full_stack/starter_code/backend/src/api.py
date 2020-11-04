@@ -20,7 +20,6 @@ CORS(app)
 
 # ROUTES
 '''
-@TODO implement endpoint
     GET /drinks
         it should be a public endpoint
         it should contain only the drink.short() data representation
@@ -29,99 +28,6 @@ CORS(app)
 '''
 
 
-'''
-@TODO implement endpoint
-    GET /drinks-detail
-        it should require the 'get:drinks-detail' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
-
-
-'''
-@TODO implement endpoint
-    POST /drinks
-        it should create a new row in the drinks table
-        it should require the 'post:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
-        or appropriate status code indicating reason for failure
-'''
-
-
-'''
-@TODO implement endpoint
-    PATCH /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should update the corresponding row for <id>
-        it should require the 'patch:drinks' permission
-        it should contain the drink.long() data representation
-    returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
-        or appropriate status code indicating reason for failure
-'''
-
-
-'''
-@TODO implement endpoint
-    DELETE /drinks/<id>
-        where <id> is the existing model id
-        it should respond with a 404 error if <id> is not found
-        it should delete the corresponding row for <id>
-        it should require the 'delete:drinks' permission
-    returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
-        or appropriate status code indicating reason for failure
-'''
-
-
-# Error Handling
-'''
-Example error handling for unprocessable entity
-'''
-
-
-# @app.errorhandler(422)
-# def unprocessable(error):
-#     return jsonify({
-#         "success": False,
-#         "error": 422,
-#         "message": "unprocessable"
-#     }), 422
-
-
-'''
-@TODO implement error handlers using the @app.errorhandler(error) decorator
-    each error handler should return (with approprate messages):
-             jsonify({
-                    "success": False, 
-                    "error": 404,
-                    "message": "resource not found"
-                    }), 404
-
-'''
-
-'''
-@TODO implement error handler for 404
-    error handler should conform to general task above 
-'''
-
-
-'''
-@TODO implement error handler for AuthError
-    error handler should conform to general task above 
-'''
-
-
-
-## ROUTES
-'''
-    GET /drinks
-        it should be a public endpoint
-        it should contain only the drink.short() data representation
-    returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
-        or appropriate status code indicating reason for failure
-'''
 @app.route('/drinks')
 def get_drinks():
     try:
@@ -138,7 +44,7 @@ def get_drinks():
             'drinks': drinks,
             'number': number_of_drinks
         })
-    
+
     except:
         abort(500)  # Catchall
 
@@ -150,9 +56,12 @@ def get_drinks():
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route('/drinks-detail')
 @requires_auth(permission='get:drinks-detail')
-def get_drinks_detail(payload):     # We don't use the payload but the decorator returns it
+# We don't use the payload but the decorator returns it
+def get_drinks_detail(payload):
     try:                            # Any function that calls the requires_auth will need payload, and maybe other arguments
         # Only Managers and Baristas should see our top-secret recipe
         drinks = Drink.query.all()
@@ -165,7 +74,7 @@ def get_drinks_detail(payload):     # We don't use the payload but the decorator
             'success': True,
             'drinks': drinks
         })
-    
+
     except:
         abort(500)  # Catchall
 
@@ -178,6 +87,8 @@ def get_drinks_detail(payload):     # We don't use the payload but the decorator
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route('/drinks', methods=["POST"])
 @requires_auth(permission='post:drinks')
 def post_drink(payload):
@@ -186,7 +97,7 @@ def post_drink(payload):
 
     # Need to have title and recipe keys in body
     # if ('title' not in body) or ('recipe' not in body):
-    if not all([ x in body for x in ['title', 'recipe'] ]):
+    if not all([x in body for x in ['title', 'recipe']]):
         abort(422)
 
     # Grab the elements
@@ -197,11 +108,11 @@ def post_drink(payload):
     if not isinstance(drink_recipe, list):
         abort(422)
 
-    # Check recipe for correct long format.  
+    # Check recipe for correct long format.
     # Each ingredient in the list needs a name, color, and parts
     for ingredient in drink_recipe:
         # if ('name' not in ingredient) or ('color' not in ingredient) or ('parts' not in ingredient):
-        if not all([ x in ingredient for x in ['name', 'color', 'parts'] ]):
+        if not all([x in ingredient for x in ['name', 'color', 'parts']]):
             abort(422)
 
     # Format the drink_recipe as a string for the database (opposite of when we use loads)
@@ -212,13 +123,15 @@ def post_drink(payload):
         drink.insert()
     except Exception as e:
         print(f'Exception in post_drink(): {e}')
-        abort(422)  # Understood it all, but can't process for semantic reasons.  Often because drink name needs to be unique.
-    
+        # Understood it all, but can't process for semantic reasons.  Often because drink name needs to be unique.
+        abort(422)
+
     return jsonify({
         "success": True,
-        "drinks": [drink.long()]    # Returns an array with just the newly created drink
+        # Returns an array with just the newly created drink
+        "drinks": [drink.long()]
     })
-   
+
 
 '''
     PATCH /drinks/<id>
@@ -230,6 +143,8 @@ def post_drink(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route('/drinks/<int:id>', methods=['PATCH'])
 @requires_auth(permission='patch:drinks')
 def edit_drink(payload, id):
@@ -242,7 +157,7 @@ def edit_drink(payload, id):
     body = request.json
 
     # Here we can update title OR recipe (or both).  Require at least one to be True
-    if not any([ x in body for x in ['title', 'recipe'] ]):
+    if not any([x in body for x in ['title', 'recipe']]):
         abort(422)
 
     if 'title' in body:
@@ -254,10 +169,10 @@ def edit_drink(payload, id):
         if not isinstance(drink_recipe, list):
             abort(422)
 
-        # Check recipe for correct long format.  
+        # Check recipe for correct long format.
         # Each ingredient in the list needs a name, color, and parts
         for ingredient in drink_recipe:
-            if not all([ x in ingredient for x in ['name', 'color', 'parts'] ]):
+            if not all([x in ingredient for x in ['name', 'color', 'parts']]):
                 abort(422)
 
         # Format the drink_recipe as a string for the database (opposite of when we use loads)
@@ -268,11 +183,13 @@ def edit_drink(payload, id):
         drink.update()
     except Exception as e:
         print(f'Exception in edit_drink(): {e}')
-        abort(422)  # Understood it all, but can't process for semantic reasons.
+        # Understood it all, but can't process for semantic reasons.
+        abort(422)
 
     return jsonify({
         "success": True,
-        "drinks": [drink.long()]    # Here contains a list with just the updated drink
+        # Here contains a list with just the updated drink
+        "drinks": [drink.long()]
     })
 
 
@@ -285,6 +202,8 @@ def edit_drink(payload, id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+
 @app.route('/drinks/<int:id>', methods=['DELETE'])
 @requires_auth(permission='delete:drinks')
 def delete_drink(payload, id):
@@ -297,7 +216,8 @@ def delete_drink(payload, id):
         drink.delete()
     except Exception as e:
         print(f'Exception in delete_drink(): {e}')
-        abort(422)  # Understood it all, but can't process for semantic reasons.
+        # Understood it all, but can't process for semantic reasons.
+        abort(422)
 
     return jsonify({
         "success": True,
@@ -305,11 +225,13 @@ def delete_drink(payload, id):
     })
 
 
-## Error Handling.  Returns tuple of JSON data and integer status code
+# Error Handling.  Returns tuple of JSON data and integer status code
 
 '''
     error handler should conform to general task above 
 '''
+
+
 @app.errorhandler(AuthError)
 def auth_error(excpt):
     # This decorator is called when an exception is thrown of AuthError type
@@ -324,61 +246,67 @@ def auth_error(excpt):
 def bad_request(error):
     '''Server cannot process request due to client error, such as malformed request'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 400,
         "message": "bad request"
-        }), 400
+    }), 400
+
 
 @app.errorhandler(401)
 def unauthorized(error):
     '''Authentication has not yet been provided'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 401,
         "message": "unauthorized"
-        }), 401
+    }), 401
+
 
 @app.errorhandler(403)
 def forbidden(error):
     '''Server is refusing action, often because user does not have permissions for request'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 403,
         "message": "forbidden"
-        }), 403
+    }), 403
+
 
 @app.errorhandler(404)
 def not_found(error):
     '''Requested resource could not be found on the server'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 404,
         "message": "not found"
-        }), 404
+    }), 404
+
 
 @app.errorhandler(405)
 def method_not_allowed(error):
     '''Request method (i.e. GET or POST) is not allowed for this resource'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 405,
         "message": "method not allowed"
-        }), 405
+    }), 405
+
 
 @app.errorhandler(422)
 def unprocessable(error):
     '''The request was well-formed but unable to be followed due to semantic errors'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 422,
         "message": "unprocessable"
-        }), 422
+    }), 422
+
 
 @app.errorhandler(500)
 def server_error(error):
     '''Catch-all for server error on our end'''
     return jsonify({
-        "success": False, 
+        "success": False,
         "error": 500,
         "message": "internal server error"
-        }), 500
+    }), 500
