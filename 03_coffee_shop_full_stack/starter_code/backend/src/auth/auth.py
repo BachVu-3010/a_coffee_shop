@@ -18,6 +18,8 @@ AuthError Exception
 A standardized way to communicate auth failure modes
 '''
 
+# To make sure git work properly
+
 
 class AuthError(Exception):
     def __init__(self, error, status_code):
