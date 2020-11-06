@@ -29,7 +29,8 @@ CORS(app)
 
 
 @app.route('/drinks')
-def get_drinks():
+@requires_auth(permission='get:drink')
+def get_drinks(payload):
     try:
         # Anyone can get the drinks list, so don't decorate with requires_auth()
         drinks = Drink.query.all()
