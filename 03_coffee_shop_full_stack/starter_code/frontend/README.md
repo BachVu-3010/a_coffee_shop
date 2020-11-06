@@ -26,7 +26,7 @@ npm install
 
 ## Required Tasks
 
-### Configure Enviornment Variables
+### Configure Environment Variables
 
 Ionic uses a configuration file to manage environment variables. These variables ship with the transpiled software and should not include secrets.
 
